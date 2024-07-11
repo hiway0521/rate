@@ -1,58 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exchange Rates</title>
+    <title>汇率信息</title>
     <style>
-        table {
-            width: 50%;
-            margin: 20px auto;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .report-container {
+            width: 80%;
+            max-width: 600px;
+        }
+        .report-table {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .report-table table {
+            width: 100%;
             border-collapse: collapse;
         }
-        th, td {
-            padding: 10px;
+        .report-table th, .report-table td {
+            padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-        th {
+        .report-table th {
             background-color: #f2f2f2;
         }
+        .report-table td {
+            word-wrap: break-word;
+        }
     </style>
+    <script>
+        function fetchExchangeRates() {
+            fetch('https://metrobankrate.hiway0755.workers.dev/')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('usdRate').innerText = data.USD;
+                    document.getElementById('cnyRate').innerText = data.CNY;
+                    document.getElementById('hkdRate').innerText = data.HKD;
+                })
+                .catch(error => {
+                    console.error('Error fetching exchange rates:', error);
+                });
+        }
+        window.onload = fetchExchangeRates;
+    </script>
 </head>
 <body>
-    <h2>Exchange Rates</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Currency</th>
-                <th>Rate</th>
-                <th>Check Rate</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>USD</td>
-                <td id="usdRate"></td>
-                <td><a href="https://metrobankrate.hiway0755.workers.dev/" target="_blank">Check</a></td>
-            </tr>
-            <tr>
-                <td>CNY</td>
-                <td id="cnyRate"></td>
-                <td><a href="https://metrobankrate.hiway0755.workers.dev/" target="_blank">Check</a></td>
-            </tr>
-            <tr>
-                <td>HKD</td>
-                <td id="hkdRate"></td>
-                <td><a href="https://metrobankrate.hiway0755.workers.dev/" target="_blank">Check</a></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <script>
-        document.getElementById('usdRate').textContent = '58.0000';
-        document.getElementById('cnyRate').textContent = '7.9500';
-        document.getElementById('hkdRate').textContent = '7.2100';
-    </script>
+    <div class="report-container">
+        <div class="report-table">
+            <h2>汇率信息</h2>
+            <table>
+                <tr>
+                    <th>货币</th>
+                    <th>汇率</th>
+                    <th>查看汇率</th>
+                </tr>
+                <tr>
+                    <td>美元 (USD)</td>
+                    <td id="usdRate">Loading...</td>
+                    <td><a href="https://metrobankrate.hiway0755.workers.dev/" target="_blank">查看</a></td>
+                </tr>
+                <tr>
+                    <td>人民币 (CNY)</td>
+                    <td id="cnyRate">Loading...</td>
+                    <td><a href="https://metrobankrate.hiway0755.workers.dev/" target="_blank">查看</a></td>
+                </tr>
+                <tr>
+                    <td>港币 (HKD)</td>
+                    <td id="hkdRate">Loading...</td>
+                    <td><a href="https://metrobankrate.hiway0755.workers.dev/" target="_blank">查看</a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
 </body>
 </html>
