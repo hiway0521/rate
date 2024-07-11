@@ -1,27 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fetch and Display Content</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metrobank Exchange Rates</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+</style>
 </head>
 <body>
-    <h1>Metrobank Rate</h1>
-    <button id="fetchButton">Fetch Rate</button>
-    <div id="content"></div>
+  <h1>Metrobank Exchange Rates</h1>
+  <div id="exchangeRates"></div>
 
-    <script>
-        document.getElementById('fetchButton').addEventListener('click', () => {
-            fetch('https://metrobankrate.hiway0755.workers.dev/')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('content').innerText = data;
-                })
-                .catch(error => {
-                    console.error('Error fetching the data:', error);
-                    document.getElementById('content').innerText = 'Error fetching the data.';
-                });
-        });
-    </script>
+  <script>
+    async function fetchExchangeRates() {
+      try {
+        const response = await fetch('https://metrobankrate.hiway0755.workers.dev/index.html'); // Adjust URL if necessary
+        const data = await response.json();
+        displayExchangeRates(data);
+      } catch (error) {
+        console.error('Error fetching exchange rates:', error);
+      }
+    }
+
+    function displayExchangeRates(rates) {
+      const exchangeRatesDiv = document.getElementById('exchangeRates');
+      const table = document.createElement('table');
+      const headerRow = table.createTHead().insertRow();
+      const headers = ['Currency', 'Buying Rate'];
+      headers.forEach(headerText => {
+        const th = document.createElement('th');
+        th.textContent = headerText;
+        headerRow.appendChild(th);
+      });
+
+      const currencies = Object.keys(rates);
+      currencies.forEach(currency => {
+        const row = table.insertRow();
+        const cell1 = row.insertCell();
+        const cell2 = row.insertCell();
+        cell1.textContent = currency;
+        cell2.textContent = rates[currency];
+      });
+
+      exchangeRatesDiv.appendChild(table);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchExchangeRates();
+    });
+  </script>
 </body>
 </html>
