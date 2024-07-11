@@ -4,8 +4,30 @@
     <meta charset="UTF-8">
     <title>Real-time Exchange Rates</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #007BFF;
+        }
         table {
-            width: 70%;
+            width: 100%;
             border-collapse: collapse;
             margin: 25px 0;
             font-size: 18px;
@@ -15,77 +37,138 @@
             padding: 12px;
             border-bottom: 1px solid #ddd;
         }
+        th {
+            background-color: #007BFF;
+            color: #fff;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
     </style>
 </head>
 <body>
-    <h2>Real-time Exchange Rates</h2>
-    <table id="exchangeRates">
-        <tr>
-            <th>Bank</th>
-            <th>Currency</th>
-            <th>Buy Rate</th>
-            <th>Sell Rate</th>
-        </tr>
-    </table>
+    <div class="container">
+        <h2>Real-time Exchange Rates</h2>
+        <table id="exchangeRates">
+            <tr>
+                <th>Bank</th>
+                <th>Currency</th>
+                <th>Buy Rate</th>
+                <th>Sell Rate</th>
+            </tr>
+        </table>
+    </div>
 
     <script>
         const exchangeRatesTable = document.getElementById('exchangeRates');
 
         async function fetchRates() {
-            // Use a CORS proxy to fetch the data
+            // API URLs
             const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
             const metrobankUrl = 'https://www.metrobank.com.ph/articles/forex';
             const bdoUrl = 'https://www.bdo.com.ph/forex';
+            const pnbUrl = 'https://www.pnb.com.ph/index.php/foreign-exchange-rates';
+            const baiduUsdUrl = 'https://www.baidu.com/s?ie=utf-8&wd=USD%20CNY';
+            const baiduCnyUrl = 'https://www.baidu.com/s?ie=utf-8&wd=PHP%20CNY';
+            const unionPayUrl = 'https://m.unionpayintl.com/cn/rate/';
 
             try {
+                // Fetch data from Metrobank
                 const metrobankResponse = await fetch(proxyUrl + metrobankUrl);
                 const metrobankText = await metrobankResponse.text();
+                const metrobankRates = parseMetrobankData(metrobankText);
+
+                // Fetch data from BDO
                 const bdoResponse = await fetch(proxyUrl + bdoUrl);
                 const bdoText = await bdoResponse.text();
+                const bdoRates = parseBdoData(bdoText);
 
-                // Process Metrobank data
-                const metrobankParser = new DOMParser();
-                const metrobankDoc = metrobankParser.parseFromString(metrobankText, 'text/html');
-                const metrobankRows = [
-                    { currency: 'USD to PHP', buy: '55.60', sell: '56.20' },
-                    { currency: 'CNY to PHP', buy: '7.68', sell: '8.15' }
-                ];
+                // Fetch data from PNB
+                const pnbResponse = await fetch(proxyUrl + pnbUrl);
+                const pnbText = await pnbResponse.text();
+                const pnbRates = parsePnbData(pnbText);
 
-                // Process BDO data
-                const bdoParser = new DOMParser();
-                const bdoDoc = bdoParser.parseFromString(bdoText, 'text/html');
-                const bdoRows = [
-                    { currency: 'USD to PHP', buy: '58.00', sell: '58.50' },
-                    { currency: 'CNY to PHP', buy: '7.38', sell: '8.07' }
-                ];
+                // Fetch data from Baidu
+                const baiduUsdResponse = await fetch(proxyUrl + baiduUsdUrl);
+                const baiduUsdText = await baiduUsdResponse.text();
+                const baiduUsdRates = parseBaiduData(baiduUsdText, 'USD to CNY');
 
-                // Display Metrobank rates
-                metrobankRows.forEach(row => {
-                    exchangeRatesTable.innerHTML += `
-                        <tr>
-                            <td>Metrobank</td>
-                            <td>${row.currency}</td>
-                            <td>${row.buy}</td>
-                            <td>${row.sell}</td>
-                        </tr>
-                    `;
-                });
+                const baiduCnyResponse = await fetch(proxyUrl + baiduCnyUrl);
+                const baiduCnyText = await baiduCnyResponse.text();
+                const baiduCnyRates = parseBaiduData(baiduCnyText, 'PHP to CNY');
 
-                // Display BDO rates
-                bdoRows.forEach(row => {
-                    exchangeRatesTable.innerHTML += `
-                        <tr>
-                            <td>BDO</td>
-                            <td>${row.currency}</td>
-                            <td>${row.buy}</td>
-                            <td>${row.sell}</td>
-                        </tr>
-                    `;
-                });
+                // Fetch data from UnionPay
+                const unionPayResponse = await fetch(proxyUrl + unionPayUrl);
+                const unionPayText = await unionPayResponse.text();
+                const unionPayRates = parseUnionPayData(unionPayText);
+
+                // Display rates
+                displayRates('Metrobank', metrobankRates);
+                displayRates('BDO', bdoRates);
+                displayRates('PNB', pnbRates);
+                displayRates('Baidu', [...baiduUsdRates, ...baiduCnyRates]);
+                displayRates('UnionPay', unionPayRates);
 
             } catch (error) {
                 console.error('Error fetching exchange rates:', error);
             }
+        }
+
+        function parseMetrobankData(html) {
+            // Dummy data as example, parse actual HTML in production
+            return [
+                { currency: 'USD to PHP', buy: '55.60', sell: '56.20' },
+                { currency: 'CNY to PHP', buy: '7.68', sell: '8.15' }
+            ];
+        }
+
+        function parseBdoData(html) {
+            // Dummy data as example, parse actual HTML in production
+            return [
+                { currency: 'USD to PHP', buy: '58.00', sell: '58.50' },
+                { currency: 'CNY to PHP', buy: '7.38', sell: '8.07' }
+            ];
+        }
+
+        function parsePnbData(html) {
+            // Dummy data as example, parse actual HTML in production
+            return [
+                { currency: 'USD to PHP', buy: '57.00', sell: '57.50' },
+                { currency: 'CNY to PHP', buy: '7.48', sell: '7.98' }
+            ];
+        }
+
+        function parseBaiduData(html, type) {
+            // Dummy data as example, parse actual HTML in production
+            if (type === 'USD to CNY') {
+                return [
+                    { currency: 'USD to CNY', buy: '6.50', sell: '6.60' }
+                ];
+            } else {
+                return [
+                    { currency: 'PHP to CNY', buy: '0.13', sell: '0.14' }
+                ];
+            }
+        }
+
+        function parseUnionPayData(html) {
+            // Dummy data as example, parse actual HTML in production
+            return [
+                { currency: 'CNY to PHP', buy: '7.40', sell: '7.50' }
+            ];
+        }
+
+        function displayRates(bank, rates) {
+            rates.forEach(rate => {
+                exchangeRatesTable.innerHTML += `
+                    <tr>
+                        <td>${bank}</td>
+                        <td>${rate.currency}</td>
+                        <td>${rate.buy}</td>
+                        <td>${rate.sell}</td>
+                    </tr>
+                `;
+            });
         }
 
         fetchRates();
