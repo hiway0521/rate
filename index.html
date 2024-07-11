@@ -105,12 +105,13 @@
                 const pnbRates = parsePnbData(pnbText);
                 displayRates('PNB', pnbRates);
 
-                // Fetch data from Baidu
+                // Fetch data from Baidu USD to CNY
                 const baiduUsdResponse = await fetch(proxyUrl + baiduUsdUrl);
                 const baiduUsdText = await baiduUsdResponse.text();
                 const baiduUsdRates = parseBaiduData(baiduUsdText, 'USD to CNY');
                 displayRates('Baidu', baiduUsdRates);
 
+                // Fetch data from Baidu PHP to CNY
                 const baiduCnyResponse = await fetch(proxyUrl + baiduCnyUrl);
                 const baiduCnyText = await baiduCnyResponse.text();
                 const baiduCnyRates = parseBaiduData(baiduCnyText, 'PHP to CNY');
@@ -122,40 +123,69 @@
         }
 
         function parseMetrobankData(html) {
-            // Dummy data as example, parse actual HTML in production
-            return [
-                { currency: 'USD to PHP', buy: 'Dynamic', sell: 'Dynamic' },
-                { currency: 'CNY to PHP', buy: 'Dynamic', sell: 'Dynamic' }
-            ];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const rates = [];
+
+            const rows = doc.querySelectorAll('.exchange-rates-table tbody tr');
+            rows.forEach(row => {
+                const currency = row.querySelector('.currency').textContent.trim();
+                const buy = row.querySelector('.buy-rate').textContent.trim();
+                const sell = row.querySelector('.sell-rate').textContent.trim();
+                rates.push({ currency, buy, sell });
+            });
+
+            return rates;
         }
 
         function parseBdoData(html) {
-            // Dummy data as example, parse actual HTML in production
-            return [
-                { currency: 'USD to PHP', buy: 'Dynamic', sell: 'Dynamic' },
-                { currency: 'CNY to PHP', buy: 'Dynamic', sell: 'Dynamic' }
-            ];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const rates = [];
+
+            const rows = doc.querySelectorAll('.forex-table tbody tr');
+            rows.forEach(row => {
+                const currency = row.querySelector('.currency').textContent.trim();
+                const buy = row.querySelector('.buy-rate').textContent.trim();
+                const sell = row.querySelector('.sell-rate').textContent.trim();
+                rates.push({ currency, buy, sell });
+            });
+
+            return rates;
         }
 
         function parsePnbData(html) {
-            // Dummy data as example, parse actual HTML in production
-            return [
-                { currency: 'USD to PHP', buy: 'Dynamic', sell: 'Dynamic' },
-                { currency: 'CNY to PHP', buy: 'Dynamic', sell: 'Dynamic' }
-            ];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const rates = [];
+
+            const rows = doc.querySelectorAll('.foreign-exchange-rates-table tbody tr');
+            rows.forEach(row => {
+                const currency = row.querySelector('.currency').textContent.trim();
+                const buy = row.querySelector('.buy-rate').textContent.trim();
+                const sell = row.querySelector('.sell-rate').textContent.trim();
+                rates.push({ currency, buy, sell });
+            });
+
+            return rates;
         }
 
         function parseBaiduData(html, type) {
-            // Dummy data as example, parse actual HTML in production
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const rates = [];
+
+            const rateElement = doc.querySelector('.exchange-rate');
+            const rateText = rateElement.textContent.trim();
+            const rateValue = parseFloat(rateText);
+
             if (type === 'USD to CNY') {
-                return [
-                    { currency: 'USD to CNY', buy: 'Dynamic', sell: 'Dynamic' }
-                ];
+                rates.push({ currency: 'USD to CNY', buy: rateValue.toFixed(2), sell: (1 / rateValue).toFixed(2) });
             } else if (type === 'PHP to CNY') {
-                return [
-                    { currency: 'PHP to CNY', buy: 'Dynamic', sell: 'Dynamic' }
-                ];
+                rates.push({ currency: 'PHP to CNY', buy: (1 / rateValue).toFixed(2), sell: rateValue.toFixed(2) });
             }
+
+            return rates;
         }
 
         function displayRates(bank, rates) {
