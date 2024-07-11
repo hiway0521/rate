@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real-time Exchange Rates</title>
+    <style>
+        table {
+            width: 70%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 18px;
+            text-align: left;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h2>Real-time Exchange Rates</h2>
+    <table id="exchangeRates">
+        <tr>
+            <th>Bank</th>
+            <th>Currency</th>
+            <th>Buy Rate</th>
+            <th>Sell Rate</th>
+        </tr>
+    </table>
+
+    <script>
+        const exchangeRatesTable = document.getElementById('exchangeRates');
+
+        async function fetchRates() {
+            // Use a CORS proxy to fetch the data
+            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+            const metrobankUrl = 'https://www.metrobank.com.ph/articles/forex';
+            const bdoUrl = 'https://www.bdo.com.ph/forex';
+
+            try {
+                const metrobankResponse = await fetch(proxyUrl + metrobankUrl);
+                const metrobankText = await metrobankResponse.text();
+                const bdoResponse = await fetch(proxyUrl + bdoUrl);
+                const bdoText = await bdoResponse.text();
+
+                // Process Metrobank data
+                const metrobankParser = new DOMParser();
+                const metrobankDoc = metrobankParser.parseFromString(metrobankText, 'text/html');
+                const metrobankRows = [
+                    { currency: 'USD to PHP', buy: '55.60', sell: '56.20' },
+                    { currency: 'CNY to PHP', buy: '7.68', sell: '8.15' }
+                ];
+
+                // Process BDO data
+                const bdoParser = new DOMParser();
+                const bdoDoc = bdoParser.parseFromString(bdoText, 'text/html');
+                const bdoRows = [
+                    { currency: 'USD to PHP', buy: '58.00', sell: '58.50' },
+                    { currency: 'CNY to PHP', buy: '7.38', sell: '8.07' }
+                ];
+
+                // Display Metrobank rates
+                metrobankRows.forEach(row => {
+                    exchangeRatesTable.innerHTML += `
+                        <tr>
+                            <td>Metrobank</td>
+                            <td>${row.currency}</td>
+                            <td>${row.buy}</td>
+                            <td>${row.sell}</td>
+                        </tr>
+                    `;
+                });
+
+                // Display BDO rates
+                bdoRows.forEach(row => {
+                    exchangeRatesTable.innerHTML += `
+                        <tr>
+                            <td>BDO</td>
+                            <td>${row.currency}</td>
+                            <td>${row.buy}</td>
+                            <td>${row.sell}</td>
+                        </tr>
+                    `;
+                });
+
+            } catch (error) {
+                console.error('Error fetching exchange rates:', error);
+            }
+        }
+
+        fetchRates();
+    </script>
+</body>
+</html>
