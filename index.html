@@ -48,14 +48,15 @@
             background-color: #f1f1f1;
         }
         .check-rates-button {
-            margin-top: 20px;
-            padding: 10px 20px;
+            margin-top: 5px;
+            padding: 5px 10px;
             background-color: #007BFF;
             color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             text-decoration: none;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -68,9 +69,9 @@
                 <th>Currency</th>
                 <th>Buy Rate</th>
                 <th>Sell Rate</th>
+                <th>Check Rate</th>
             </tr>
         </table>
-        <a href="https://m.unionpayintl.com/cn/rate/" target="_blank" class="check-rates-button">Check UnionPay Rates</a>
     </div>
 
     <script>
@@ -90,31 +91,30 @@
                 const metrobankResponse = await fetch(proxyUrl + metrobankUrl);
                 const metrobankText = await metrobankResponse.text();
                 const metrobankRates = parseMetrobankData(metrobankText);
+                displayRates('Metrobank', metrobankRates);
 
                 // Fetch data from BDO
                 const bdoResponse = await fetch(proxyUrl + bdoUrl);
                 const bdoText = await bdoResponse.text();
                 const bdoRates = parseBdoData(bdoText);
+                displayRates('BDO', bdoRates);
 
                 // Fetch data from PNB
                 const pnbResponse = await fetch(proxyUrl + pnbUrl);
                 const pnbText = await pnbResponse.text();
                 const pnbRates = parsePnbData(pnbText);
+                displayRates('PNB', pnbRates);
 
                 // Fetch data from Baidu
                 const baiduUsdResponse = await fetch(proxyUrl + baiduUsdUrl);
                 const baiduUsdText = await baiduUsdResponse.text();
                 const baiduUsdRates = parseBaiduData(baiduUsdText, 'USD to CNY');
+                displayRates('Baidu', baiduUsdRates);
 
                 const baiduCnyResponse = await fetch(proxyUrl + baiduCnyUrl);
                 const baiduCnyText = await baiduCnyResponse.text();
                 const baiduCnyRates = parseBaiduData(baiduCnyText, 'PHP to CNY');
-
-                // Display rates
-                displayRates('Metrobank', metrobankRates);
-                displayRates('BDO', bdoRates);
-                displayRates('PNB', pnbRates);
-                displayRates('Baidu', [...baiduUsdRates, ...baiduCnyRates]);
+                displayRates('Baidu', baiduCnyRates);
 
             } catch (error) {
                 console.error('Error fetching exchange rates:', error);
@@ -124,24 +124,24 @@
         function parseMetrobankData(html) {
             // Dummy data as example, parse actual HTML in production
             return [
-                { currency: 'USD to PHP', buy: '55.60', sell: '56.20' },
-                { currency: 'CNY to PHP', buy: '7.68', sell: '8.15' }
+                { currency: 'USD to PHP', buy: 'Dynamic', sell: 'Dynamic' },
+                { currency: 'CNY to PHP', buy: 'Dynamic', sell: 'Dynamic' }
             ];
         }
 
         function parseBdoData(html) {
             // Dummy data as example, parse actual HTML in production
             return [
-                { currency: 'USD to PHP', buy: '58.00', sell: '58.50' },
-                { currency: 'CNY to PHP', buy: '7.38', sell: '8.07' }
+                { currency: 'USD to PHP', buy: 'Dynamic', sell: 'Dynamic' },
+                { currency: 'CNY to PHP', buy: 'Dynamic', sell: 'Dynamic' }
             ];
         }
 
         function parsePnbData(html) {
             // Dummy data as example, parse actual HTML in production
             return [
-                { currency: 'USD to PHP', buy: '57.00', sell: '57.50' },
-                { currency: 'CNY to PHP', buy: '7.48', sell: '7.98' }
+                { currency: 'USD to PHP', buy: 'Dynamic', sell: 'Dynamic' },
+                { currency: 'CNY to PHP', buy: 'Dynamic', sell: 'Dynamic' }
             ];
         }
 
@@ -149,26 +149,45 @@
             // Dummy data as example, parse actual HTML in production
             if (type === 'USD to CNY') {
                 return [
-                    { currency: 'USD to CNY', buy: '6.50', sell: '6.60' }
+                    { currency: 'USD to CNY', buy: 'Dynamic', sell: 'Dynamic' }
                 ];
-            } else {
+            } else if (type === 'PHP to CNY') {
                 return [
-                    { currency: 'PHP to CNY', buy: '0.13', sell: '0.14' }
+                    { currency: 'PHP to CNY', buy: 'Dynamic', sell: 'Dynamic' }
                 ];
             }
         }
 
         function displayRates(bank, rates) {
             rates.forEach(rate => {
-                exchangeRatesTable.innerHTML += `
-                    <tr>
-                        <td>${bank}</td>
-                        <td>${rate.currency}</td>
-                        <td>${rate.buy}</td>
-                        <td>${rate.sell}</td>
-                    </tr>
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${bank}</td>
+                    <td>${rate.currency}</td>
+                    <td>${rate.buy}</td>
+                    <td>${rate.sell}</td>
+                    <td><a href="${getRateLink(bank, rate.currency)}" target="_blank" class="check-rates-button">Check Rate</a></td>
                 `;
+                exchangeRatesTable.appendChild(row);
             });
+        }
+
+        function getRateLink(bank, currency) {
+            // Replace with actual links to official rate checking pages
+            if (bank === 'Metrobank') {
+                return 'https://www.metrobank.com.ph/articles/forex';
+            } else if (bank === 'BDO') {
+                return 'https://www.bdo.com.ph/forex';
+            } else if (bank === 'PNB') {
+                return 'https://www.pnb.com.ph/index.php/foreign-exchange-rates';
+            } else if (bank === 'Baidu') {
+                if (currency === 'USD to CNY') {
+                    return 'https://www.baidu.com/s?ie=utf-8&wd=USD%20CNY';
+                } else if (currency === 'PHP to CNY') {
+                    return 'https://www.baidu.com/s?ie=utf-8&wd=PHP%20CNY';
+                }
+            }
+            return '#'; // Default link
         }
 
         fetchRates();
